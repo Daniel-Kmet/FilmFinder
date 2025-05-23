@@ -17,9 +17,6 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://filmfinder.app',
   },
-  other: {
-    'google-adsense-account': 'ca-pub-7514637431264317',
-  },
 };
 
 export default function RootLayout({
@@ -30,12 +27,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* AdSense Verification */}
         <meta name="google-adsense-account" content="ca-pub-7514637431264317" />
+        
+        {/* AdSense Script */}
         <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7514637431264317"
-          crossOrigin="anonymous"
+          id="adsbygoogle-init"
           strategy="afterInteractive"
+          crossOrigin="anonymous"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7514637431264317"
         />
       </head>
       <body className={inter.className}>

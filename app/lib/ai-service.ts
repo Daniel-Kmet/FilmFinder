@@ -7,8 +7,12 @@ import { QuizResponse, AIRecommendation } from '@/app/types';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize the Google Generative AI client
-const apiKey = process.env.GOOGLE_API_KEY || '';
-console.log('[AI Service] API Key present:', !!apiKey); // Temporary debug log
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  console.error('[AI Service] GEMINI_API_KEY is not set in environment variables');
+  throw new Error('GEMINI_API_KEY is required for AI recommendations');
+}
+
 const genAI = new GoogleGenerativeAI(apiKey);
 
 /**
@@ -32,9 +36,19 @@ export async function generateRecommendation(quizData: QuizResponse): Promise<AI
 
     // Parse the response into structured recommendations
     return parseAIResponse(text);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[AI Service] Error generating recommendation:', error);
-    throw error;
+    
+    // Handle specific API errors
+    if (error.message?.includes('403 Forbidden')) {
+      throw new Error('AI service authentication failed. Please check your API key.');
+    }
+    
+    if (error.message?.includes('429')) {
+      throw new Error('AI service rate limit exceeded. Please try again later.');
+    }
+    
+    throw new Error('Failed to generate movie recommendation. Please try again.');
   }
 }
 
