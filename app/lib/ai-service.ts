@@ -4,55 +4,32 @@
  */
 
 import { QuizResponse, AIRecommendation } from '@/app/types';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+// Initialize the Google Generative AI client
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 /**
- * Generate a movie recommendation using Gemini AI
+ * Generate movie recommendations using Google's Gemini AI
+ * 
+ * @param quizData - The quiz responses from the user
+ * @returns A promise that resolves to an array of movie recommendations
  */
 export async function generateRecommendation(quizData: QuizResponse): Promise<AIRecommendation> {
-  if (!GEMINI_API_KEY) {
-    throw new Error('Gemini API key not configured');
-  }
-
-  const prompt = buildPrompt(quizData);
-  
   try {
-    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        }
-      })
-    });
+    // Get the generative model
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-8b' });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Gemini API error: ${response.status} - ${JSON.stringify(errorData)}`);
-    }
+    // Create the prompt based on quiz type
+    const prompt = buildPrompt(quizData);
 
-    const data = await response.json();
-    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!generatedText) {
-      throw new Error('No response generated from Gemini API');
-    }
+    // Generate content
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-    return parseAIResponse(generatedText);
-    
+    // Parse the response into structured recommendations
+    return parseAIResponse(text);
   } catch (error) {
     console.error('[AI Service] Error generating recommendation:', error);
     throw error;

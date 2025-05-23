@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// TMDB API configuration
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
+const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 /**
@@ -9,64 +8,48 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
  * 
  * Handles GET requests to search for movies using TMDB API
  * Query parameters:
- * - q: search query string
+ * - q: search query string (legacy)
+ * - query: search query string (new)
  * 
  * Returns: JSON response with movie results
  */
 export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const query = searchParams.get('q') || searchParams.get('query');
+
+  if (!query || query.trim().length === 0) {
+    return NextResponse.json(
+      { error: 'Search query is required' },
+      { status: 400 }
+    );
+  }
+
+  if (!TMDB_ACCESS_TOKEN) {
+    console.error('TMDB_ACCESS_TOKEN not configured');
+    return NextResponse.json(
+      { error: 'TMDB access token not configured' },
+      { status: 500 }
+    );
+  }
+
   try {
-    // Validate API key configuration
-    if (!TMDB_API_KEY) {
-      console.error('TMDB_API_KEY not configured');
-      return NextResponse.json(
-        { error: 'Movie search service not configured' },
-        { status: 500 }
-      );
-    }
-
-    // Extract search query from URL parameters
-    const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
-
-    if (!query || query.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Search query is required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate query length to prevent abuse
-    if (query.length > 100) {
-      return NextResponse.json(
-        { error: 'Search query too long' },
-        { status: 400 }
-      );
-    }
-
-    // Call TMDB search API
-    const tmdbUrl = `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=en-US&page=1&include_adult=false`;
+    const tmdbUrl = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=1&include_adult=false`;
     
-    const tmdbResponse = await fetch(tmdbUrl, {
+    const response = await fetch(tmdbUrl, {
       headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'FilmFinder/1.0'
-      },
-      // Cache for 5 minutes to reduce API calls
-      next: { revalidate: 300 }
+        'Authorization': `Bearer ${TMDB_ACCESS_TOKEN}`,
+        'accept': 'application/json'
+      }
     });
 
-    if (!tmdbResponse.ok) {
-      console.error('TMDB API error:', tmdbResponse.status, tmdbResponse.statusText);
-      return NextResponse.json(
-        { error: 'Movie search service temporarily unavailable' },
-        { status: 503 }
-      );
+    if (!response.ok) {
+      throw new Error(`TMDB API error: ${response.status}`);
     }
 
-    const tmdbData = await tmdbResponse.json();
-
+    const data = await response.json();
+    
     // Filter and format results for frontend
-    const filteredResults = tmdbData.results
+    const filteredResults = data.results
       .filter((movie: any) => {
         // Filter out movies without essential data
         return movie.title && 
@@ -86,13 +69,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       results: filteredResults,
-      total_results: Math.min(tmdbData.total_results, 20)
+      total_results: Math.min(data.total_results, 20)
     });
-
+    
   } catch (error) {
-    console.error('Movie search API error:', error);
+    console.error('Error searching movies:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to search movies' },
       { status: 500 }
     );
   }

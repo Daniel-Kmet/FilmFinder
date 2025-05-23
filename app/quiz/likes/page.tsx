@@ -53,13 +53,29 @@ export default function LikesQuiz() {
    */
   const handleComplete = async (data: any) => {
     try {
+      // Extract movie titles and attributes
+      const favoriteMovies = data.selectedMovies.map((movie: any) => movie.title);
+      const favoriteGenres = Array.from(new Set(
+        data.selectedMovies.flatMap((movie: any) => 
+          movie.genre_ids || []
+        )
+      ));
+      const favoriteActors = Array.from(new Set(
+        data.selectedMovies.flatMap((movie: any) => 
+          movie.credits?.cast?.slice(0, 3).map((cast: any) => cast.name) || []
+        )
+      ));
+
       // Prepare quiz payload
       const quizPayload = {
         type: 'likes',
         responses: {
-          selectedMovies: data.selectedMovies,
-          movieAttributes: data.movieAttributes,
-          completedAt: new Date().toISOString(),
+          favoriteMovies,
+          favoriteGenres,
+          favoriteActors,
+          dislikedGenres: [], // Not collected in this quiz
+          preferredDecade: 'any', // Not collected in this quiz
+          viewingContext: 'any', // Not collected in this quiz
         },
       };
 
@@ -74,9 +90,6 @@ export default function LikesQuiz() {
       
       // Show user-friendly error
       alert('There was an issue processing your quiz. Please try again.');
-      
-      // Could also show a toast notification or modal here
-      // For now, we'll just log and let user retry
     }
   };
 

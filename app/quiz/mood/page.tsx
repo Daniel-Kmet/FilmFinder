@@ -39,25 +39,31 @@ export default function MoodQuiz() {
 
   const handleComplete = async (data: any) => {
     try {
-      const response = await fetch('/api/quiz/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Prepare quiz payload
+      const quizPayload = {
+        type: 'mood',
+        responses: {
+          currentMood: data.mood,
+          desiredFeeling: data.desiredFeeling || 'any',
+          genre: data.genres?.[0] || 'any',
+          intensity: data.intensity,
+          setting: 'any', // Not collected in this quiz
+          companionType: 'any', // Not collected in this quiz
+          duration: data.duration,
         },
-        body: JSON.stringify({
-          type: 'mood',
-          responses: data,
-        }),
-      });
+      };
 
-      if (!response.ok) {
-        throw new Error('Failed to submit quiz');
-      }
+      // Store quiz data in sessionStorage for ad page
+      sessionStorage.setItem('pendingQuiz', JSON.stringify(quizPayload));
 
+      // Navigate to ad interstitial
       router.push('/quiz/ad');
+
     } catch (error) {
-      console.error('Error submitting quiz:', error);
-      // Handle error appropriately
+      console.error('Error preparing quiz submission:', error);
+      
+      // Show user-friendly error
+      alert('There was an issue processing your quiz. Please try again.');
     }
   };
 
@@ -65,6 +71,7 @@ export default function MoodQuiz() {
     <QuizWizard
       steps={steps}
       onComplete={handleComplete}
+      initialData={{}}
     />
   );
 } 

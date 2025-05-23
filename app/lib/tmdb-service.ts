@@ -5,7 +5,7 @@
 
 import { TMDBMovie, TMDBMovieDetails, TMDBCredits, MovieRecommendation, AIRecommendation } from '@/app/types';
 
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
+const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 const TMDB_IMAGE_BASE_URL_LARGE = 'https://image.tmdb.org/t/p/w1280';
@@ -14,8 +14,8 @@ const TMDB_IMAGE_BASE_URL_LARGE = 'https://image.tmdb.org/t/p/w1280';
  * Search for a movie on TMDB and get detailed information
  */
 export async function enrichMovieWithTMDB(aiRecommendation: AIRecommendation): Promise<MovieRecommendation> {
-  if (!TMDB_API_KEY) {
-    throw new Error('TMDB API key not configured');
+  if (!TMDB_ACCESS_TOKEN) {
+    throw new Error('TMDB access token not configured');
   }
 
   try {
@@ -49,7 +49,6 @@ export async function enrichMovieWithTMDB(aiRecommendation: AIRecommendation): P
  */
 async function searchMovie(title: string, year?: number): Promise<TMDBMovie[]> {
   const searchParams = new URLSearchParams({
-    api_key: TMDB_API_KEY!,
     query: title,
     include_adult: 'false',
     language: 'en-US',
@@ -60,7 +59,12 @@ async function searchMovie(title: string, year?: number): Promise<TMDBMovie[]> {
     searchParams.append('year', year.toString());
   }
 
-  const response = await fetch(`${TMDB_BASE_URL}/search/movie?${searchParams}`);
+  const response = await fetch(`${TMDB_BASE_URL}/search/movie?${searchParams}`, {
+    headers: {
+      'Authorization': `Bearer ${TMDB_ACCESS_TOKEN}`,
+      'accept': 'application/json'
+    }
+  });
   
   if (!response.ok) {
     throw new Error(`TMDB search error: ${response.status}`);
@@ -75,7 +79,13 @@ async function searchMovie(title: string, year?: number): Promise<TMDBMovie[]> {
  */
 async function getMovieDetails(movieId: number): Promise<TMDBMovieDetails> {
   const response = await fetch(
-    `${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&language=en-US`
+    `${TMDB_BASE_URL}/movie/${movieId}?language=en-US`,
+    {
+      headers: {
+        'Authorization': `Bearer ${TMDB_ACCESS_TOKEN}`,
+        'accept': 'application/json'
+      }
+    }
   );
   
   if (!response.ok) {
@@ -90,7 +100,13 @@ async function getMovieDetails(movieId: number): Promise<TMDBMovieDetails> {
  */
 async function getMovieCredits(movieId: number): Promise<TMDBCredits> {
   const response = await fetch(
-    `${TMDB_BASE_URL}/movie/${movieId}/credits?api_key=${TMDB_API_KEY}&language=en-US`
+    `${TMDB_BASE_URL}/movie/${movieId}/credits?language=en-US`,
+    {
+      headers: {
+        'Authorization': `Bearer ${TMDB_ACCESS_TOKEN}`,
+        'accept': 'application/json'
+      }
+    }
   );
   
   if (!response.ok) {

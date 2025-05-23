@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.10.0",
     "@tanstack/react-query": "^5.24.0",
     "bcryptjs": "^3.0.2",
