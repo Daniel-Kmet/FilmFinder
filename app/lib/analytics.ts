@@ -12,7 +12,7 @@ const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 declare global {
   interface Window {
     gtag: (...args: unknown[]) => void;
-    dataLayer: Record<string, unknown>[];
+    dataLayer: unknown[][];
   }
 }
 
@@ -79,8 +79,8 @@ export function initializeAnalytics() {
     window.dataLayer = window.dataLayer || [];
 
     // Define gtag function
-    window.gtag = function() {
-      window.dataLayer.push(arguments);
+    window.gtag = function(...args: unknown[]) {
+      window.dataLayer.push(args);
     };
 
     // Configure GA4
