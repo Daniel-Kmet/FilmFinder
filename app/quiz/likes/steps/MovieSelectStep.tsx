@@ -45,7 +45,7 @@ export default function MovieSelectStep({ onNext, onBack, data }: MovieSelectSte
   // State management for movie search and selection
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<TMDBMovie[]>([]);
-  const [selectedMovies, setSelectedMovies] = useState<TMDBMovie[]>(data.selectedMovies || []);
+  const [selectedMovies, setSelectedMovies] = useState<TMDBMovie[]>((data.selectedMovies as TMDBMovie[]) || []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
