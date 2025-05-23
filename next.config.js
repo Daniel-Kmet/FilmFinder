@@ -8,10 +8,6 @@ const nextConfig = {
       'graph.facebook.com', // Facebook OAuth profile pictures
     ],
   },
-  // Enable static optimization where possible
-  experimental: {
-    optimizeCss: true,
-  },
   // Configure headers for security
   async headers() {
     return [
