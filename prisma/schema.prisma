@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  hashedPassword String?
+  oauthProvider String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  quizResponses QuizResponse[]
+  feedback      Feedback[]
+}
+
+model QuizResponse {
+  id            String    @id @default(cuid())
+  userId        String
+  quizType      String    // "mood" or "likes"
+  responses     Json      // Stores the quiz answers
+  createdAt     DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id])
+  recommendations Recommendation[]
+}
+
+model Recommendation {
+  id            String    @id @default(cuid())
+  quizResponseId String
+  movieId       String
+  movieTitle    String
+  movieData     Json      // Stores TMDB movie data
+  aiExplanation String    @db.Text
+  createdAt     DateTime  @default(now())
+  quizResponse  QuizResponse @relation(fields: [quizResponseId], references: [id])
+  feedback      Feedback[]
+}
+
+model Feedback {
+  id              String    @id @default(cuid())
+  userId          String
+  recommendationId String
+  thumbsUp        Boolean
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id])
+  recommendation  Recommendation @relation(fields: [recommendationId], references: [id])
+}
