@@ -7,7 +7,9 @@ import { QuizResponse, AIRecommendation } from '@/app/types';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize the Google Generative AI client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const apiKey = process.env.GOOGLE_API_KEY || '';
+console.log('[AI Service] API Key present:', !!apiKey); // Temporary debug log
+const genAI = new GoogleGenerativeAI(apiKey);
 
 /**
  * Generate movie recommendations using Google's Gemini AI
