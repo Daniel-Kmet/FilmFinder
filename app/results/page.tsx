@@ -291,7 +291,7 @@ export default function ResultsPage() {
             </button>
             
             <p className="text-sm text-gray-500">
-              Not quite what you're looking for? Take another quiz to discover more movies!
+              Not quite what you are looking for? Take another quiz to discover more movies!
             </p>
           </div>
         </div>

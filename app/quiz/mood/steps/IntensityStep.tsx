@@ -5,7 +5,7 @@ import { useState } from 'react';
 interface IntensityStepProps {
   onNext: (data: { intensity: string }) => void;
   onBack: () => void;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 const intensityOptions = [
@@ -36,7 +36,7 @@ const intensityOptions = [
 ];
 
 export default function IntensityStep({ onNext, onBack, data }: IntensityStepProps) {
-  const [selectedIntensity, setSelectedIntensity] = useState(data.intensity || '');
+  const [selectedIntensity, setSelectedIntensity] = useState((data.intensity as string) || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

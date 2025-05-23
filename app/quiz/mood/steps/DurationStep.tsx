@@ -5,7 +5,7 @@ import { useState } from 'react';
 interface DurationStepProps {
   onNext: (data: { duration: string }) => void;
   onBack: () => void;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 const durationOptions = [
@@ -16,7 +16,7 @@ const durationOptions = [
 ];
 
 export default function DurationStep({ onNext, onBack, data }: DurationStepProps) {
-  const [selectedDuration, setSelectedDuration] = useState(data.duration || '');
+  const [selectedDuration, setSelectedDuration] = useState((data.duration as string) || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -51,24 +51,32 @@ export default function LikesQuiz() {
    * 2. Navigate to the ad interstitial page
    * 3. Pass quiz type and responses for recommendation generation
    */
-  const handleComplete = async (data: any) => {
+  const handleComplete = async (data: Record<string, unknown>) => {
     try {
       // Extract movie titles and attributes
-      const favoriteMovies = data.selectedMovies.map((movie: any) => movie.title);
+      const selectedMovies = data.selectedMovies as Array<{
+        title: string;
+        genre_ids?: number[];
+        credits?: {
+          cast?: Array<{ name: string }>;
+        };
+      }>;
+      
+      const favoriteMovies = selectedMovies.map((movie) => movie.title);
       const favoriteGenres = Array.from(new Set(
-        data.selectedMovies.flatMap((movie: any) => 
+        selectedMovies.flatMap((movie) => 
           movie.genre_ids || []
         )
       ));
       const favoriteActors = Array.from(new Set(
-        data.selectedMovies.flatMap((movie: any) => 
-          movie.credits?.cast?.slice(0, 3).map((cast: any) => cast.name) || []
+        selectedMovies.flatMap((movie) => 
+          movie.credits?.cast?.slice(0, 3).map((cast) => cast.name) || []
         )
       ));
 
       // Prepare quiz payload
       const quizPayload = {
-        type: 'likes',
+        type: 'likes' as const,
         responses: {
           favoriteMovies,
           favoriteGenres,

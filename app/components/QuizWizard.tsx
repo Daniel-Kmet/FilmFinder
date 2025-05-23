@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -5,25 +7,27 @@ interface QuizStep {
   id: string;
   title: string;
   description: string;
-  component: React.ComponentType<{
-    onNext: (data: any) => void;
-    onBack: () => void;
-    data: any;
-  }>;
+  component: React.ComponentType<StepProps>;
+}
+
+interface StepProps {
+  onNext: (data: Record<string, unknown>) => void;
+  onBack: () => void;
+  data: Record<string, unknown>;
 }
 
 interface QuizWizardProps {
   steps: QuizStep[];
-  onComplete: (data: any) => void;
-  initialData?: any;
+  onComplete: (data: Record<string, unknown>) => void;
+  initialData?: Record<string, unknown>;
 }
 
 export default function QuizWizard({ steps, onComplete, initialData = {} }: QuizWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState(initialData);
+  const [formData, setFormData] = useState<Record<string, unknown>>(initialData);
   const router = useRouter();
 
-  const handleNext = (stepData: any) => {
+  const handleNext = (stepData: Record<string, unknown>) => {
     const newData = { ...formData, ...stepData };
     setFormData(newData);
 
@@ -46,42 +50,33 @@ export default function QuizWizard({ steps, onComplete, initialData = {} }: Quiz
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white py-12">
-      <div className="container mx-auto px-4 max-w-3xl">
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">{steps[currentStep].title}</h2>
-            <span className="text-gray-400">
-              Step {currentStep + 1} of {steps.length}
-            </span>
-          </div>
+      {/* Progress bar */}
+      <div className="max-w-3xl mx-auto px-4 mb-8">
+        <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
+          <span>Step {currentStep + 1} of {steps.length}</span>
+          <span>{Math.round(((currentStep + 1) / steps.length) * 100)}% Complete</span>
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-2">
+          <div 
+            className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Step content */}
+      <div className="max-w-3xl mx-auto px-4">
+        <div className="mb-8 text-center">
+          <h2 className="text-2xl font-bold mb-2">{steps[currentStep].title}</h2>
           <p className="text-gray-400">{steps[currentStep].description}</p>
         </div>
 
-        <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
+        <div className="bg-gray-800 rounded-lg p-6">
           <CurrentStepComponent
             onNext={handleNext}
             onBack={handleBack}
             data={formData}
           />
-        </div>
-
-        <div className="mt-8 flex justify-between">
-          <button
-            onClick={handleBack}
-            className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-200"
-          >
-            {currentStep === 0 ? 'Cancel' : 'Back'}
-          </button>
-          <div className="flex gap-2">
-            {Array.from({ length: steps.length }).map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full ${
-                  index === currentStep ? 'bg-primary-500' : 'bg-gray-600'
-                }`}
-              />
-            ))}
-          </div>
         </div>
       </div>
     </div>

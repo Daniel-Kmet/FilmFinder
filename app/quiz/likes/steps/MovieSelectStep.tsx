@@ -36,9 +36,9 @@ interface TMDBMovie {
 }
 
 interface MovieSelectStepProps {
-  onNext: (data: { selectedMovies: TMDBMovie[] }) => void;
+  onNext: (data: { selectedMovies: unknown[] }) => void;
   onBack: () => void;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export default function MovieSelectStep({ onNext, onBack, data }: MovieSelectStepProps) {

@@ -20,7 +20,7 @@ import trackEvent from '@/app/lib/analytics';
 
 interface QuizPayload {
   type: 'mood' | 'likes';
-  responses: any;
+  responses: Record<string, unknown>;
 }
 
 export default function AdInterstitialPage() {
@@ -232,8 +232,8 @@ export default function AdInterstitialPage() {
             <div className="text-center text-white space-y-4">
               <div className="text-6xl">🎬</div>
               <h2 className="text-xl font-semibold">Ad Loading...</h2>
-              <p className="text-gray-400">
-                Please wait while we prepare your recommendation
+              <p className="text-gray-400 mb-4">
+                We are loading your personalized movie recommendation. This brief advertisement helps keep our service free.
               </p>
               <div className="animate-pulse bg-gray-700 h-2 w-48 rounded mx-auto"></div>
             </div>

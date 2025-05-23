@@ -5,7 +5,7 @@ import { useState } from 'react';
 interface MoodStepProps {
   onNext: (data: { mood: string }) => void;
   onBack: () => void;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 const moodOptions = [
@@ -48,7 +48,7 @@ const moodOptions = [
 ];
 
 export default function MoodStep({ onNext, onBack, data }: MoodStepProps) {
-  const [selectedMood, setSelectedMood] = useState(data.mood || '');
+  const [selectedMood, setSelectedMood] = useState((data.mood as string) || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

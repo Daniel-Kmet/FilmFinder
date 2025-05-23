@@ -11,63 +11,47 @@ const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 // Declare gtag function for TypeScript
 declare global {
   interface Window {
-    gtag: (
-      command: 'config' | 'event',
-      targetId: string,
-      config?: Record<string, any>
-    ) => void;
-    dataLayer: any[];
+    gtag: (...args: unknown[]) => void;
+    dataLayer: Record<string, unknown>[];
   }
 }
 
 /**
- * Track a custom event with GA4
+ * Track a custom event with Google Analytics
  * 
- * @param eventName - The name of the event to track
- * @param payload - Optional additional data to send with the event
- * 
- * Usage examples:
- * - trackEvent('ad_viewed', { quizType: 'mood' })
- * - trackEvent('recommendation_clicked', { movieId: 12345 })
- * - trackEvent('quiz_completed', { type: 'likes', duration: 240 })
+ * @param eventName - The event name
+ * @param eventParameters - Additional event parameters
  */
-export function trackEvent(eventName: string, payload?: Record<string, any>) {
+export default function trackEvent(eventName: string, eventParameters: Record<string, unknown> = {}) {
+  // Only track in production or when GA_MEASUREMENT_ID is set
+  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  
+  if (!measurementId || typeof window === 'undefined') {
+    console.log(`[Analytics] Would track: ${eventName}`, eventParameters);
+    return;
+  }
+
   try {
-    // Check if we're in browser environment
-    if (typeof window === 'undefined') {
-      console.log('[Analytics] Server-side, skipping event:', eventName);
-      return;
-    }
-
-    // Check if GA4 is configured
-    if (!GA_MEASUREMENT_ID) {
-      console.log('[Analytics] GA4 not configured, skipping event:', eventName);
-      return;
-    }
-
-    // Check if gtag is available
-    if (typeof window.gtag !== 'function') {
-      console.log('[Analytics] gtag not loaded, skipping event:', eventName);
-      return;
-    }
-
-    // Track the event
-    window.gtag('event', eventName, {
-      // Standard GA4 parameters
-      event_category: 'user_interaction',
-      event_label: eventName,
+    // Ensure gtag is available
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', eventName, {
+        // Add default parameters
+        page_title: document.title,
+        page_location: window.location.href,
+        
+        // Add custom parameters
+        ...eventParameters,
+        
+        // Add timestamp
+        event_timestamp: Date.now(),
+      });
       
-      // Custom payload data
-      ...payload,
-      
-      // Add timestamp for debugging
-      timestamp: new Date().toISOString(),
-    });
-
-    console.log('[Analytics] Event tracked:', eventName, payload);
-
+      console.log(`[Analytics] Tracked: ${eventName}`, eventParameters);
+    } else {
+      console.warn('[Analytics] gtag not available');
+    }
   } catch (error) {
-    console.error('[Analytics] Error tracking event:', eventName, error);
+    console.error('[Analytics] Error tracking event:', error);
   }
 }
 
@@ -117,14 +101,22 @@ export function initializeAnalytics() {
 /**
  * Track page views
  * 
- * @param pagePath - The path of the page being viewed
- * @param pageTitle - Optional title of the page
+ * @param url - The page URL
+ * @param title - The page title
  */
-export function trackPageView(pagePath: string, pageTitle?: string) {
-  trackEvent('page_view', {
-    page_path: pagePath,
-    page_title: pageTitle || pagePath,
-  });
+export function trackPageView(url: string, title?: string) {
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
+    return;
+  }
+
+  try {
+    window.gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!, {
+      page_path: url,
+      page_title: title,
+    });
+  } catch (error) {
+    console.error('[Analytics] Error tracking page view:', error);
+  }
 }
 
 /**
@@ -139,7 +131,7 @@ export function trackQuizEvent(
   eventName: string, 
   quizType: 'mood' | 'likes', 
   step?: string, 
-  additionalData?: Record<string, any>
+  additionalData?: Record<string, unknown>
 ) {
   trackEvent(eventName, {
     quiz_type: quizType,
@@ -148,4 +140,62 @@ export function trackQuizEvent(
   });
 }
 
-export default trackEvent; 
+/**
+ * Set user properties for analytics
+ * 
+ * @param properties - User properties to set
+ */
+export function setUserProperties(properties: Record<string, unknown>) {
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
+    return;
+  }
+
+  try {
+    window.gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!, {
+      user_properties: properties,
+    });
+  } catch (error) {
+    console.error('[Analytics] Error setting user properties:', error);
+  }
+}
+
+/**
+ * Enhanced event tracking with validation
+ * 
+ * @param eventName - The event name
+ * @param parameters - Event parameters
+ */
+export function trackEnhancedEvent(eventName: string, parameters: Record<string, unknown> = {}) {
+  // Validate event name
+  if (!eventName || typeof eventName !== 'string') {
+    console.error('[Analytics] Invalid event name:', eventName);
+    return;
+  }
+
+  // Clean and validate parameters
+  const cleanParameters = Object.fromEntries(
+    Object.entries(parameters).filter(([key, value]) => {
+      // Remove undefined values and ensure valid keys
+      return value !== undefined && typeof key === 'string' && key.length > 0;
+    })
+  );
+
+  // Use the main tracking function
+  trackEvent(eventName, cleanParameters);
+}
+
+/**
+ * Legacy support - track events with rest parameters
+ * @deprecated Use trackEvent instead
+ */
+export function legacyTrackEvent(eventName: string, ...params: unknown[]) {
+  console.warn('[Analytics] Using deprecated legacyTrackEvent, use trackEvent instead');
+  
+  // Convert rest parameters to an object
+  const parameters: Record<string, unknown> = {};
+  params.forEach((param, index) => {
+    parameters[`param_${index}`] = param;
+  });
+  
+  trackEvent(eventName, parameters);
+} 

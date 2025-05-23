@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     
     // Filter and format results for frontend
     const filteredResults = data.results
-      .filter((movie: any) => {
+      .filter((movie: { title: string; release_date: string; poster_path: string; vote_average: number }) => {
         // Filter out movies without essential data
         return movie.title && 
                movie.release_date && 
@@ -58,7 +58,14 @@ export async function GET(request: NextRequest) {
                movie.vote_average > 0; // Filter out unrated movies
       })
       .slice(0, 20) // Limit to top 20 results
-      .map((movie: any) => ({
+      .map((movie: { 
+        id: number; 
+        title: string; 
+        release_date: string; 
+        poster_path: string; 
+        overview?: string; 
+        vote_average: number 
+      }) => ({
         id: movie.id,
         title: movie.title,
         release_date: movie.release_date,

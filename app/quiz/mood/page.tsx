@@ -37,19 +37,19 @@ const steps = [
 export default function MoodQuiz() {
   const router = useRouter();
 
-  const handleComplete = async (data: any) => {
+  const handleComplete = async (data: Record<string, unknown>) => {
     try {
       // Prepare quiz payload
       const quizPayload = {
-        type: 'mood',
+        type: 'mood' as const,
         responses: {
-          currentMood: data.mood,
-          desiredFeeling: data.desiredFeeling || 'any',
-          genre: data.genres?.[0] || 'any',
-          intensity: data.intensity,
+          currentMood: data.mood as string,
+          desiredFeeling: (data.desiredFeeling as string) || 'any',
+          genre: ((data.genres as string[]))?.[0] || 'any',
+          intensity: data.intensity as string,
           setting: 'any', // Not collected in this quiz
           companionType: 'any', // Not collected in this quiz
-          duration: data.duration,
+          duration: data.duration as string,
         },
       };
 

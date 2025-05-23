@@ -8,8 +8,9 @@ export default function Home() {
           <h1 className="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
             FilmFinder
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto">
-            Discover your next favorite movie with AI-powered recommendations tailored to your mood and taste.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Discover your next favorite movie with our AI-powered recommendation engine. 
+            Answer a few questions about your mood or favorite films, and we'll find the perfect match.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">

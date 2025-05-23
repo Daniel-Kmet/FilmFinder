@@ -5,7 +5,7 @@ import { useState } from 'react';
 interface GenreStepProps {
   onNext: (data: { genres: string[] }) => void;
   onBack: () => void;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 const genreOptions = [
@@ -24,7 +24,7 @@ const genreOptions = [
 ];
 
 export default function GenreStep({ onNext, onBack, data }: GenreStepProps) {
-  const [selectedGenres, setSelectedGenres] = useState<string[]>(data.genres || []);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>((data.genres as string[]) || []);
 
   const handleGenreToggle = (genre: string) => {
     setSelectedGenres((prev) =>
